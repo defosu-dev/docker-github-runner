@@ -12,8 +12,7 @@ services:
       - runner_work:/runner
     depends_on:
       - dind
-    # Uncomment to set memory limit for runner service
-    # mem_limit: ${RUNNER_MEMORY_LIMIT:-2g}
+    mem_limit: ${RUNNER_MEMORY_LIMIT:-2g}
     restart: unless-stopped
 
   dind:
@@ -21,6 +20,7 @@ services:
     privileged: true
     environment:
       - DOCKER_TLS_CERTDIR=
+      - DOCKER_HOST=tcp://0.0.0.0:2375
     command: ["--host=tcp://0.0.0.0:2375"]
     tmpfs:
       - /var/lib/docker:exec,size=${DOCKER_STORAGE_SIZE:-6G}
@@ -29,3 +29,4 @@ services:
 
 volumes:
   runner_work:
+    driver: local
