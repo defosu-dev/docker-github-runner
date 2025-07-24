@@ -1,0 +1,31 @@
+services:
+  runner:
+    image: summerwind/actions-runner:latest
+    environment:
+      - RUNNER_NAME=${RUNNER_NAME:-ephemeral-org-runner}
+      - RUNNER_ORG=${GITHUB_ORG}
+      - RUNNER_TOKEN=${RUNNER_TOKEN}
+      - RUNNER_LABELS=${RUNNER_LABELS:-linux,docker,self-hosted}
+      - DOCKER_HOST=tcp://dind:2375
+      - RUNNER_EPHEMERAL=true
+    volumes:
+      - runner_work:/runner
+    depends_on:
+      - dind
+    # Uncomment to set memory limit for runner service
+    # mem_limit: ${RUNNER_MEMORY_LIMIT:-2g}
+    restart: unless-stopped
+
+  dind:
+    image: docker:24-dind
+    privileged: true
+    environment:
+      - DOCKER_TLS_CERTDIR=
+    command: ["--host=tcp://0.0.0.0:2375"]
+    tmpfs:
+      - /var/lib/docker:exec,size=${DOCKER_STORAGE_SIZE:-6G}
+    mem_limit: ${DIND_MEMORY_LIMIT:-6g}
+    restart: unless-stopped
+
+volumes:
+  runner_work:
